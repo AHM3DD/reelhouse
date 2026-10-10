@@ -76,7 +76,7 @@ The key stays on the server: it is never rendered into HTML, sent to the browser
 | `DJANGO_SERVE_MEDIA` | Let Django serve uploaded avatars in production. |
 | `GUNICORN_WORKERS` | Gunicorn worker count. |
 | `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD` | Database credentials (used by both containers). |
-| `POSTGRES_HOST`, `POSTGRES_PORT` | `db` / `5432` inside Compose. |
+| `POSTGRES_HOST`, `POSTGRES_PORT` | `db` / `5433` inside Compose (the database container listens on this port; it is not published to the host). |
 | `TMDB_API_KEY` | TMDB v3 API key. |
 | `TMDB_LANGUAGE`, `TMDB_REGION`, `TMDB_TIMEOUT` | Locale, optional region for upcoming/now playing, request timeout in seconds. |
 | `WEB_PORT` | Host port (default 8888). |

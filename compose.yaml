@@ -7,6 +7,8 @@ services:
   db:
     image: postgres:17.6-alpine
     restart: unless-stopped
+    # PostgreSQL listens on POSTGRES_PORT (default 5433) instead of 5432.
+    command: ["postgres", "-c", "port=${POSTGRES_PORT:-5433}"]
     environment:
       POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB in .env}
       POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in .env}
@@ -14,7 +16,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -p ${POSTGRES_PORT:-5433} -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -35,7 +37,7 @@ services:
     environment:
       DJANGO_SETTINGS_MODULE: config.settings.production
       POSTGRES_HOST: db
-      POSTGRES_PORT: "5432"
+      POSTGRES_PORT: "${POSTGRES_PORT:-5433}"
     depends_on:
       db:
         condition: service_healthy
