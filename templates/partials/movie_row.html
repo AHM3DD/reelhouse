@@ -1,0 +1,18 @@
+{% load ui %}<section class="relative" aria-labelledby="row-{{ row_id }}">
+  <div class="container-page flex items-end justify-between gap-4">
+    <div>
+      {% if eyebrow %}<p class="eyebrow">{{ eyebrow }}</p>{% endif %}
+      <h2 id="row-{{ row_id }}" class="section-title mt-1">{{ title }}</h2>
+    </div>
+    <div class="flex items-center gap-1">
+      {% if see_all_url %}<a href="{{ see_all_url }}" class="mr-2 inline-flex items-center gap-1 text-sm font-medium text-zinc-400 transition hover:text-accent">See all {% icon "chevron-right" "h-4 w-4" %}</a>{% endif %}
+      <button type="button" class="btn-icon hidden ring-1 ring-white/10 md:inline-flex" data-scroll="left" data-target="track-{{ row_id }}" aria-label="Scroll {{ title }} left">{% icon "chevron-left" "h-4 w-4" %}</button>
+      <button type="button" class="btn-icon hidden ring-1 ring-white/10 md:inline-flex" data-scroll="right" data-target="track-{{ row_id }}" aria-label="Scroll {{ title }} right">{% icon "chevron-right" "h-4 w-4" %}</button>
+    </div>
+  </div>
+  <div id="track-{{ row_id }}" class="scrollbar-none mt-5 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-px-4 px-4 pb-4 pt-1 sm:scroll-px-6 sm:px-6 lg:scroll-px-[max(2rem,calc((100vw-80rem)/2+2rem))] lg:px-[max(2rem,calc((100vw-80rem)/2+2rem))]">
+    {% for movie in movies %}
+      <div class="w-36 shrink-0 snap-start sm:w-44 lg:w-48">{% include "partials/movie_card.html" %}</div>
+    {% endfor %}
+  </div>
+</section>

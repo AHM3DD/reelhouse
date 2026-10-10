@@ -1,0 +1,17 @@
+{% load ui %}<form method="post" action="{% url 'community:list_status' tmdb_id %}"
+      hx-post="{% url 'community:list_status' tmdb_id %}" hx-target="this" hx-swap="outerHTML" hx-disabled-elt="find button"
+      class="inline-flex items-center gap-2">
+  {% csrf_token %}
+  <input type="hidden" name="next" value="{{ request.get_full_path }}">
+  {% if compact %}<input type="hidden" name="compact" value="1">{% endif %}
+  <div class="inline-flex rounded-full bg-white/[0.06] p-1 ring-1 ring-inset ring-white/10" role="group" aria-label="Personal movie list">
+    <button type="submit" name="status" value="{% if list_status == 'want' %}none{% else %}want{% endif %}" aria-pressed="{% if list_status == 'want' %}true{% else %}false{% endif %}"
+            class="inline-flex items-center gap-1.5 rounded-full {% if compact %}px-2.5 py-1 text-xs{% else %}px-4 py-1.5 text-sm{% endif %} font-semibold transition {% if list_status == 'want' %}bg-accent text-ink-950{% else %}text-zinc-300 hover:text-white{% endif %}">
+      {% if list_status == 'want' %}{% icon "bookmark" "h-4 w-4" filled=True %}{% else %}{% icon "bookmark" "h-4 w-4" %}{% endif %}{% if list_status == 'want' %}On watchlist{% else %}Watchlist{% endif %}
+    </button>
+    <button type="submit" name="status" value="{% if list_status == 'watched' %}none{% else %}watched{% endif %}" aria-pressed="{% if list_status == 'watched' %}true{% else %}false{% endif %}"
+            class="inline-flex items-center gap-1.5 rounded-full {% if compact %}px-2.5 py-1 text-xs{% else %}px-4 py-1.5 text-sm{% endif %} font-semibold transition {% if list_status == 'watched' %}bg-emerald-400 text-ink-950{% else %}text-zinc-300 hover:text-white{% endif %}">
+      {% if list_status == 'watched' %}{% icon "check" "h-4 w-4" stroke="2.2" %}{% else %}{% icon "eye" "h-4 w-4" %}{% endif %}Watched
+    </button>
+  </div>
+</form>

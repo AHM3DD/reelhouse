@@ -1,0 +1,36 @@
+{% load ui %}<section class="relative isolate overflow-hidden border-b border-white/[0.06]">
+  <div class="absolute inset-0 -z-10" aria-hidden="true">
+    <div class="absolute inset-0 bg-gradient-to-br from-ink-800 via-ink-900 to-ink-950"></div>
+    <div class="absolute -top-24 left-1/4 h-72 w-72 rounded-full blur-3xl" style="background: hsl({{ owner.profile.avatar_hue }} 60% 40% / .25);"></div>
+  </div>
+  <div class="container-page py-10 sm:py-14">
+    <div class="flex flex-col gap-6 sm:flex-row sm:items-end">
+      {% include "partials/avatar.html" with profile=owner.profile size="h-24 w-24 text-4xl sm:h-32 sm:w-32 sm:text-5xl shadow-2xl" %}
+      <div class="min-w-0 flex-1">
+        {% if eyebrow %}<p class="eyebrow">{{ eyebrow }}</p>{% endif %}
+        <h1 class="mt-1 truncate font-display text-5xl text-white sm:text-6xl">{{ heading|default:owner.username }}</h1>
+        <p class="mt-2 flex items-center gap-2 text-sm text-zinc-400">{% icon "calendar" "h-4 w-4" %} Member since {{ owner.date_joined|date:"F Y" }}</p>
+      </div>
+      <div class="flex gap-2">
+        {% if is_owner %}
+          <a href="{% url 'accounts:profile_edit' %}" class="btn-secondary btn-sm">{% icon "pencil" "h-4 w-4" %} Edit profile</a>
+          {% if show_public_link %}<a href="{% url 'accounts:profile' owner.username %}" class="btn-ghost btn-sm">View public profile</a>{% endif %}
+        {% endif %}
+      </div>
+    </div>
+    {% if owner.profile.bio %}
+      <p class="mt-6 max-w-2xl whitespace-pre-line text-base leading-relaxed text-zinc-300">{{ owner.profile.bio }}</p>
+    {% elif is_owner %}
+      <p class="mt-6 text-sm text-zinc-500">You haven&rsquo;t written a bio yet. <a href="{% url 'accounts:profile_edit' %}" class="link">Add one</a> so people know your taste.</p>
+    {% endif %}
+
+    <dl class="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+      <div class="card px-4 py-3"><dt class="text-[11px] font-semibold uppercase tracking-wider text-zinc-500">Favorites</dt><dd class="mt-1 text-2xl font-semibold text-white">{{ stats.favorites }}</dd></div>
+      <div class="card px-4 py-3"><dt class="text-[11px] font-semibold uppercase tracking-wider text-zinc-500">Ratings</dt><dd class="mt-1 text-2xl font-semibold text-white">{{ stats.ratings }}</dd></div>
+      <div class="card px-4 py-3"><dt class="text-[11px] font-semibold uppercase tracking-wider text-zinc-500">Avg. rating</dt><dd class="mt-1 text-2xl font-semibold text-white">{% if stats.avg_rating is not None %}{{ stats.avg_rating|floatformat:1 }}<span class="text-sm font-normal text-zinc-500">/10</span>{% else %}&ndash;{% endif %}</dd></div>
+      <div class="card px-4 py-3"><dt class="text-[11px] font-semibold uppercase tracking-wider text-zinc-500">Watchlist</dt><dd class="mt-1 text-2xl font-semibold text-white">{{ stats.watchlist }}</dd></div>
+      <div class="card px-4 py-3"><dt class="text-[11px] font-semibold uppercase tracking-wider text-zinc-500">Watched</dt><dd class="mt-1 text-2xl font-semibold text-white">{{ stats.watched }}</dd></div>
+      <div class="card px-4 py-3"><dt class="text-[11px] font-semibold uppercase tracking-wider text-zinc-500">Comments</dt><dd class="mt-1 text-2xl font-semibold text-white">{{ stats.comments }}</dd></div>
+    </dl>
+  </div>
+</section>

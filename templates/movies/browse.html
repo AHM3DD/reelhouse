@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load ui %}
+
+{% block title %}{% if selected_genre %}{{ selected_genre.name }} movies{% else %}Browse movies{% endif %} &middot; {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="container-page pt-10 sm:pt-14">
+  <p class="eyebrow">Browse</p>
+  {% include "movies/partials/browse_title.html" %}
+
+  <form id="filters" method="get" action="{% url 'movies:browse' %}"
+        hx-get="{% url 'movies:browse' %}" hx-target="#results" hx-push-url="true" hx-trigger="change, submit" hx-indicator="#filter-spinner"
+        class="mt-8 grid gap-4 rounded-2xl bg-ink-900/70 p-4 ring-1 ring-white/[0.06] sm:grid-cols-[1fr_1fr_10rem_auto] sm:items-end sm:p-5">
+    <div>
+      <label for="genre" class="label">Genre</label>
+      <select id="genre" name="genre" class="input" {% if not genres %}disabled{% endif %}>
+        <option value="">All genres</option>
+        {% for genre in genres %}<option value="{{ genre.id }}" {% if genre.id == genre_id %}selected{% endif %}>{{ genre.name }}</option>{% endfor %}
+      </select>
+    </div>
+    <div>
+      <label for="sort" class="label">Sort by</label>
+      <select id="sort" name="sort" class="input">
+        {% for value, label in sort_options %}<option value="{{ value }}" {% if value == sort %}selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select>
+    </div>
+    <div>
+      <label for="year" class="label">Release year</label>
+      <input id="year" name="year" type="number" inputmode="numeric" min="1900" max="2100" value="{{ year }}" placeholder="Any" class="input">
+    </div>
+    <div class="flex items-center gap-3">
+      <button type="submit" class="btn-primary w-full sm:w-auto">{% icon "sliders" "h-4 w-4" %} Apply</button>
+      <span id="filter-spinner" class="htmx-indicator text-accent" aria-hidden="true">{% icon "refresh" "h-5 w-5 animate-spin" %}</span>
+    </div>
+  </form>
+
+  {% include "movies/partials/browse_chips.html" %}
+
+  <div id="results" class="mt-10 scroll-mt-24 transition-opacity" aria-live="polite">
+    {% include "movies/partials/results.html" with show_count=True %}
+  </div>
+</div>
+{% endblock %}

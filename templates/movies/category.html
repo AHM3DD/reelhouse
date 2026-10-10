@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} movies &middot; {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="container-page pt-10 sm:pt-14">
+  <p class="eyebrow">Collections</p>
+  <h1 class="mt-2 font-display text-5xl text-white sm:text-6xl">{{ title }}</h1>
+  <nav class="scrollbar-none -mx-4 mt-6 flex gap-2 overflow-x-auto px-4" aria-label="Categories">
+    {% for key, label in categories %}
+      <a href="{% url 'movies:category' key %}" class="chip shrink-0 px-4 py-2 text-sm {% if key == slug %}chip-active{% endif %}" {% if key == slug %}aria-current="page"{% endif %}>{{ label }}</a>
+    {% endfor %}
+    <a href="{% url 'movies:browse' %}" class="chip shrink-0 px-4 py-2 text-sm">By genre&hellip;</a>
+  </nav>
+  <div id="results" class="mt-10 scroll-mt-24" aria-live="polite">
+    {% include "movies/partials/results.html" %}
+  </div>
+</div>
+{% endblock %}

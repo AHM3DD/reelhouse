@@ -1,0 +1,42 @@
+{% load static ui %}<!doctype html>
+<html lang="en" class="h-full bg-ink-950">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ SITE_NAME }}: discover, rate and discuss movies{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}Discover movies, rate them, keep a watchlist and talk about them with the {{ SITE_NAME }} community.{% endblock %}">
+  <meta name="theme-color" content="#07070b">
+  <meta name="htmx-config" content='{"includeIndicatorStyles": false, "historyCacheSize": 10}'>
+  <link rel="icon" href="{% static 'img/favicon.svg' %}" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://image.tmdb.org">
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'dist/app.css' %}">
+  <script src="{% static 'vendor/htmx.min.js' %}" defer></script>
+  <script src="{% static 'js/app.js' %}" defer></script>
+  {% block head %}{% endblock %}
+</head>
+<body class="flex min-h-full flex-col" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+  <a href="#main" class="skip-link">Skip to content</a>
+
+  <div id="global-progress" class="pointer-events-none fixed opacity-0 transition-opacity duration-150 inset-x-0 top-0 z-[60] h-0.5 overflow-hidden" aria-hidden="true">
+    <div class="h-full w-2/5 animate-progress bg-gradient-to-r from-transparent via-accent to-transparent"></div>
+  </div>
+
+  {% include "partials/navbar.html" %}
+
+  <main id="main" class="flex-1 {% block main_class %}{% endblock %}">
+    {% block content %}{% endblock %}
+  </main>
+
+  {% include "partials/footer.html" %}
+
+  <div id="toasts" class="pointer-events-none fixed inset-x-4 bottom-4 z-[70] flex flex-col items-end gap-2 sm:left-auto sm:right-6 sm:w-96" aria-live="polite" aria-atomic="false">
+    {% include "partials/toast_list.html" %}
+  </div>
+  <template id="toast-template">
+    {% include "partials/toast.html" with level="error" text="" %}
+  </template>
+</body>
+</html>

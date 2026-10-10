@@ -1,0 +1,56 @@
+{% load ui humanize %}<nav class="scrollbar-none flex gap-6 overflow-x-auto border-b border-white/[0.06]" aria-label="Collection sections">
+  {% for key, label in tabs %}
+    <a href="{{ tab_url }}?tab={{ key }}" hx-get="{{ tab_url }}?tab={{ key }}" hx-target="#profile-tab" hx-push-url="true"
+       class="tab {% if key == tab %}tab-active{% endif %}" {% if key == tab %}aria-current="page"{% endif %}>{{ label }}</a>
+  {% endfor %}
+</nav>
+
+<div class="mt-8">
+{% if not items %}
+  {% if tab == "favorites" %}
+    {% if is_owner %}{% url 'movies:home' as discover_url %}{% include "partials/empty_state.html" with icon_name="heart" heading="No favorites yet" message="Tap the heart on any movie to keep it here." action_url=discover_url action_label="Discover movies" %}
+    {% else %}{% include "partials/empty_state.html" with icon_name="heart" heading="No favorites yet" message=owner.username|add:" hasn't picked any favorites yet." %}{% endif %}
+  {% elif tab == "ratings" %}
+    {% if is_owner %}{% url 'movies:category' 'top-rated' as top_url %}{% include "partials/empty_state.html" with icon_name="star" heading="You haven't rated anything" message="Rate movies from 1 to 10 to build your taste profile." action_url=top_url action_label="Rate top films" %}
+    {% else %}{% include "partials/empty_state.html" with icon_name="star" heading="No ratings yet" message=owner.username|add:" hasn't rated any movies yet." %}{% endif %}
+  {% elif tab == "watchlist" %}
+    {% if is_owner %}{% url 'movies:category' 'upcoming' as up_url %}{% include "partials/empty_state.html" with icon_name="bookmark" heading="Your watchlist is empty" message="Save movies you want to see and they'll show up here." action_url=up_url action_label="See upcoming releases" %}
+    {% else %}{% include "partials/empty_state.html" with icon_name="bookmark" heading="Watchlist is empty" message="Nothing on the watchlist yet." %}{% endif %}
+  {% elif tab == "watched" %}
+    {% include "partials/empty_state.html" with icon_name="eye" heading="No watched movies yet" message="Mark movies as watched to keep a diary of what you've seen." %}
+  {% else %}
+    {% include "partials/empty_state.html" with icon_name="chat" heading="No comments yet" message="Comments posted on movie pages will appear here." %}
+  {% endif %}
+{% elif tab == "comments" %}
+  <ul class="space-y-4" role="list">
+    {% for comment in items %}
+      <li class="card flex gap-4 p-4">
+        <a href="{% url 'movies:detail' comment.movie.tmdb_id %}#comment-{{ comment.pk }}" class="shrink-0" tabindex="-1" aria-hidden="true">
+          {% if comment.movie.poster_path %}<img src="{{ comment.movie.poster_path|tmdb_image:'w92' }}" alt="" loading="lazy" width="56" height="84" class="h-[84px] w-14 rounded-lg object-cover ring-1 ring-white/10">{% else %}<span class="flex h-[84px] w-14 items-center justify-center rounded-lg bg-ink-700 text-zinc-600">{% icon "photo" "h-5 w-5" %}</span>{% endif %}
+        </a>
+        <div class="min-w-0 flex-1">
+          <a href="{% url 'movies:detail' comment.movie.tmdb_id %}#comment-{{ comment.pk }}" class="text-sm font-semibold text-white hover:text-accent">{{ comment.movie.title }}</a>
+          <p class="text-xs text-zinc-500"><time datetime="{{ comment.created_at|date:'c' }}">{{ comment.created_at|naturaltime }}</time></p>
+          <p class="mt-2 line-clamp-4 break-words text-sm leading-relaxed text-zinc-300">{{ comment.body|linebreaksbr }}</p>
+        </div>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <ul class="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6" role="list">
+    {% for item in items %}
+      <li>
+        {% if tab == "ratings" %}
+          {% include "partials/movie_card.html" with movie=item.movie user_score=item.score %}
+        {% else %}
+          {% include "partials/movie_card.html" with movie=item.movie user_score=None %}
+        {% endif %}
+        {% if is_owner and tab == "watchlist" or is_owner and tab == "watched" %}
+          <div class="mt-2">{% include "community/partials/list_controls.html" with tmdb_id=item.movie.tmdb_id list_status=item.status compact=True %}</div>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+{% endif %}
+{% include "partials/pagination.html" with page=page_obj hx_target="profile-tab" %}
+</div>

@@ -1,0 +1,22 @@
+{% load ui %}<form method="post" action="{% url 'community:favorite' tmdb_id %}"
+      hx-post="{% url 'community:favorite' tmdb_id %}" hx-target="this" hx-swap="outerHTML" hx-disabled-elt="find button"
+      class="inline-flex">
+  {% csrf_token %}
+  <input type="hidden" name="action" value="{% if is_favorite %}remove{% else %}add{% endif %}">
+  <input type="hidden" name="variant" value="{{ variant }}">
+  <input type="hidden" name="next" value="{{ request.get_full_path }}">
+  {% if variant == "card" %}
+    <button type="submit" aria-pressed="{{ is_favorite|yesno:'true,false' }}"
+            aria-label="{% if is_favorite %}Remove {{ title }} from favorites{% else %}Add {{ title }} to favorites{% endif %}"
+            title="{% if is_favorite %}Remove from favorites{% else %}Add to favorites{% endif %}"
+            class="flex h-8 w-8 items-center justify-center rounded-full ring-1 backdrop-blur transition hover:scale-110 {% if is_favorite %}bg-ember text-white ring-ember/60 shadow-lg shadow-ember/30{% else %}bg-black/60 text-zinc-200 ring-white/15 opacity-100 hover:text-ember-400 sm:opacity-0 sm:focus-visible:opacity-100 sm:group-hover:opacity-100{% endif %}">
+      {% icon "heart" "h-4 w-4" filled=is_favorite stroke="2" %}
+    </button>
+  {% else %}
+    <button type="submit" aria-pressed="{{ is_favorite|yesno:'true,false' }}"
+            class="{% if is_favorite %}btn bg-ember/15 text-ember-400 ring-1 ring-inset ring-ember/40 hover:bg-ember/25{% else %}btn-secondary{% endif %}">
+      <span class="{% if is_favorite %}text-ember{% endif %}">{% icon "heart" "h-5 w-5" filled=is_favorite stroke="1.8" %}</span>
+      <span>{% if is_favorite %}In favorites{% else %}Add to favorites{% endif %}</span>
+    </button>
+  {% endif %}
+</form>

@@ -1,0 +1,8 @@
+<nav id="genre-chips" {% if oob %}hx-swap-oob="true"{% endif %} class="scrollbar-none -mx-4 mt-5 flex gap-2 overflow-x-auto px-4 pb-1" aria-label="Quick genre filters">
+  {% if genres %}
+    <a href="{% url 'movies:browse' %}?sort={{ sort }}" class="chip shrink-0 {% if not genre_id %}chip-active{% endif %}">All</a>
+    {% for genre in genres %}
+      <a href="{% url 'movies:browse' %}?genre={{ genre.id }}&amp;sort={{ sort }}" class="chip shrink-0 {% if genre.id == genre_id %}chip-active{% endif %}">{{ genre.name }}</a>
+    {% endfor %}
+  {% endif %}
+</nav>

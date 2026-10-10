@@ -1,0 +1,20 @@
+{% if query %}
+  {% include "movies/partials/results.html" with show_count=True %}
+{% else %}
+  {% if genres %}
+    <section aria-labelledby="genre-suggestions">
+      <h2 id="genre-suggestions" class="text-sm font-semibold uppercase tracking-widest text-zinc-500">Browse a genre</h2>
+      <ul class="mt-4 flex flex-wrap gap-2" role="list">
+        {% for genre in genres %}<li><a href="{% url 'movies:browse' %}?genre={{ genre.id }}" class="chip px-4 py-2 text-sm">{{ genre.name }}</a></li>{% endfor %}
+      </ul>
+    </section>
+  {% endif %}
+  {% if suggestions %}
+    <section class="mt-12" aria-labelledby="trending-suggestions">
+      <h2 id="trending-suggestions" class="section-title">Trending right now</h2>
+      <div class="mt-6">{% include "partials/movie_grid.html" with movies=suggestions %}</div>
+    </section>
+  {% elif not genres %}
+    {% include "partials/empty_state.html" with icon_name="search" heading="Start typing to search" message="Search the full TMDB catalogue by title." %}
+  {% endif %}
+{% endif %}

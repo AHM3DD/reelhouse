@@ -1,0 +1,51 @@
+{% load ui %}<section id="comments" class="scroll-mt-24" aria-labelledby="comments-heading">
+  <div class="flex items-baseline justify-between gap-4">
+    <h2 id="comments-heading" class="section-title">Discussion</h2>
+    {% include "community/partials/comment_count.html" %}
+  </div>
+
+  {% if user.is_authenticated %}
+    <form method="post" action="{% url 'community:comment_create' tmdb_id %}"
+          hx-post="{% url 'community:comment_create' tmdb_id %}" hx-target="#comments" hx-swap="outerHTML" hx-disabled-elt="find button[type=submit]"
+          class="card mt-6 p-4 sm:p-5" novalidate>
+      {% csrf_token %}
+      <div class="flex gap-3 sm:gap-4">
+        {% include "partials/avatar.html" with profile=user.profile size="h-10 w-10 text-sm" %}
+        <div class="min-w-0 flex-1">
+          <label for="id_body" class="sr-only">{{ comment_form.body.label }}</label>
+          <textarea name="body" id="id_body" rows="3" maxlength="2000" required data-counter="comment-counter"
+                    placeholder="{{ comment_form.body.field.widget.attrs.placeholder }}"
+                    {% if comment_form.body.errors %}aria-invalid="true" aria-describedby="comment-error"{% endif %}
+                    class="input min-h-[6rem] resize-y {% if comment_form.body.errors %}input-invalid{% endif %}">{{ comment_form.body.value|default_if_none:"" }}</textarea>
+          {% if comment_form.body.errors %}<p id="comment-error" class="field-error" role="alert">{% icon "warning" "h-3.5 w-3.5" %} {{ comment_form.body.errors.0 }}</p>{% endif %}
+          <div class="mt-3 flex items-center justify-between gap-3">
+            <span id="comment-counter" class="text-xs tabular-nums text-zinc-600" aria-live="off">0 / 2000</span>
+            <button type="submit" class="btn-primary btn-sm">
+              <span class="htmx-indicator -ml-1 hidden [.htmx-request_&]:inline-block">{% icon "refresh" "h-3.5 w-3.5 animate-spin" %}</span>
+              Post comment
+            </button>
+          </div>
+        </div>
+      </div>
+    </form>
+  {% else %}
+    <div class="card mt-6 flex flex-col items-start gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <p class="font-medium text-white">Join the conversation</p>
+        <p class="mt-1 text-sm text-zinc-400">Log in or create a free account to share what you thought.</p>
+      </div>
+      <div class="flex gap-2">
+        <a href="{% url 'accounts:login' %}?next={{ request.get_full_path|urlencode }}%23comments" class="btn-secondary btn-sm">Log in</a>
+        <a href="{% url 'accounts:register' %}?next={{ request.get_full_path|urlencode }}%23comments" class="btn-primary btn-sm">Sign up</a>
+      </div>
+    </div>
+  {% endif %}
+
+  <div id="comment-list" class="mt-6 space-y-4">
+    {% if comments_page.object_list %}
+      {% include "community/partials/comment_page.html" %}
+    {% else %}
+      {% include "community/partials/comments_empty.html" %}
+    {% endif %}
+  </div>
+</section>

@@ -1,0 +1,7 @@
+{% load ui %}<div data-toast role="status" class="pointer-events-auto flex w-full animate-toast-in items-start gap-3 rounded-2xl bg-ink-800/95 p-4 text-sm text-zinc-100 shadow-2xl shadow-black/50 ring-1 backdrop-blur transition duration-200 {% if level == 'error' %}ring-ember/40{% elif level == 'success' %}ring-emerald-400/30{% else %}ring-white/10{% endif %}">
+  <span class="mt-0.5 shrink-0 {% if level == 'error' %}text-ember-400{% elif level == 'success' %}text-emerald-400{% else %}text-accent{% endif %}">
+    {% if level == 'error' or level == 'warning' %}{% icon "warning" "h-5 w-5" %}{% else %}{% icon "check" "h-5 w-5" stroke="2" %}{% endif %}
+  </span>
+  <p class="flex-1 leading-snug" data-toast-message>{{ text }}</p>
+  <button type="button" data-toast-dismiss class="-m-1 rounded-full p-1 text-zinc-500 transition hover:text-white" aria-label="Dismiss notification">{% icon "x" "h-4 w-4" %}</button>
+</div>

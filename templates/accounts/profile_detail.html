@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}{{ owner.username }} &middot; {{ SITE_NAME }}{% endblock %}
+{% block meta_description %}{{ owner.username }}'s favorite movies, ratings and watchlist on {{ SITE_NAME }}.{% endblock %}
+
+{% block content %}
+{% include "accounts/partials/profile_header.html" with eyebrow="Profile" %}
+<div class="container-page mt-8">
+  <div id="profile-tab" class="scroll-mt-24" aria-live="polite">
+    {% include "accounts/partials/collection_tab.html" %}
+  </div>
+</div>
+{% endblock %}

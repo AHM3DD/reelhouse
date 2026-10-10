@@ -1,0 +1,26 @@
+{% extends "accounts/auth_base.html" %}
+{% load ui %}
+
+{% block title %}Create an account &middot; {{ SITE_NAME }}{% endblock %}
+{% block heading %}Join {{ SITE_NAME }}{% endblock %}
+{% block subheading %}Rate films, build your watchlist and join the discussion.{% endblock %}
+
+{% block form %}
+<form method="post" action="{% url 'accounts:register' %}" class="space-y-5" novalidate>
+  {% csrf_token %}
+  <input type="hidden" name="next" value="{{ next }}">
+  {% if form.non_field_errors %}
+    <div class="rounded-xl bg-ember/10 px-4 py-3 text-sm text-ember-400 ring-1 ring-inset ring-ember/30" role="alert">
+      {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+    </div>
+  {% endif %}
+  {% include "partials/field.html" with field=form.username %}
+  {% include "partials/field.html" with field=form.email %}
+  {% include "partials/field.html" with field=form.password1 %}
+  {% include "partials/field.html" with field=form.password2 %}
+  <button type="submit" class="btn-primary w-full py-3">Create account</button>
+  <p class="text-center text-xs text-zinc-500">Your email stays private and is never shown on your public profile.</p>
+</form>
+{% endblock %}
+
+{% block footer_link %}Already a member? <a href="{% url 'accounts:login' %}{% if next %}?next={{ next|urlencode }}{% endif %}" class="link">Log in</a>{% endblock %}

@@ -1,0 +1,1 @@
+{% for message in messages %}{% include "partials/toast.html" with level=message.level_tag text=message.message %}{% endfor %}

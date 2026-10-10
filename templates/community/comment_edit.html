@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}Edit comment &middot; {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="container-page max-w-2xl py-12">
+  <a href="{% url 'movies:detail' comment.movie.tmdb_id %}#comments" class="text-sm text-zinc-400 hover:text-white">&larr; Back to {{ comment.movie.title }}</a>
+  <h1 class="mt-4 font-display text-4xl text-white">Edit comment</h1>
+  <div class="mt-6">{% include "community/partials/comment_edit_form.html" %}</div>
+</div>
+{% endblock %}

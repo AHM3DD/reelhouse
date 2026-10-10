@@ -1,0 +1,63 @@
+# Production-style base configuration.
+#   Development:  docker compose up --build                 (also merges compose.override.yaml)
+#   Production:   docker compose -f compose.yaml up -d --build
+name: reelhouse
+
+services:
+  db:
+    image: postgres:17.6-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB in .env}
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - backend
+    # No "ports:" on purpose: PostgreSQL is reachable only on the internal network.
+
+  web:
+    build:
+      context: .
+      target: runtime
+    image: reelhouse-web:latest
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: true
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.production
+      POSTGRES_HOST: db
+      POSTGRES_PORT: "5432"
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:  # bound to loopback only; reach it through a reverse proxy for public access
+      - "127.0.0.1:${WEB_PORT:-8888}:8888"
+    volumes:
+      - media:/app/media
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys, urllib.request; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8888/healthz/', timeout=4).status == 200 else 1)"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+    networks:
+      - backend
+      - default
+
+volumes:
+  postgres_data:
+  media:
+
+networks:
+  # Internal-only network: no published ports and no route to the outside world.
+  backend:
+    internal: true

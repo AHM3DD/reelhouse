@@ -1,0 +1,10 @@
+{% load humanize %}{% if error %}
+  {% include "partials/empty_state.html" with icon_name="warning" tone="error" heading="Movies are unavailable right now" message="We could not reach our movie data provider. Please try again in a few minutes." %}
+{% elif page and page.results %}
+  {% if page.stale %}<p class="mb-4 text-xs text-zinc-500">Showing saved results; live data is temporarily unavailable.</p>{% endif %}
+  {% if show_count %}<p class="mb-6 text-sm text-zinc-400"><span class="font-semibold text-white">{{ page.total_results|intcomma }}</span> result{{ page.total_results|pluralize }}</p>{% endif %}
+  {% include "partials/movie_grid.html" with movies=page.results %}
+  {% include "partials/pagination.html" with page=page hx_target="results" %}
+{% else %}
+  {% include "partials/empty_state.html" with icon_name="search" heading="Nothing here" message=empty_message|default:"No movies found." %}
+{% endif %}

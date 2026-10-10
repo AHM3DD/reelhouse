@@ -1,0 +1,74 @@
+{% load ui %}{% url 'movies:home' as home_url %}{% url 'movies:browse' as browse_url %}{% url 'accounts:collection' as collection_url %}
+<header class="sticky top-0 z-50 border-b border-white/[0.06] bg-ink-950/75 backdrop-blur-xl supports-[backdrop-filter]:bg-ink-950/60">
+  <nav class="container-page flex h-16 items-center gap-4" aria-label="Main">
+    <a href="{{ home_url }}" class="group flex shrink-0 items-center gap-2 rounded-lg">
+      <span class="text-accent transition group-hover:rotate-45 duration-500">{% icon "reel" "h-7 w-7" stroke="1.8" %}</span>
+      <span class="font-display text-2xl tracking-tight text-white">{{ SITE_NAME }}</span>
+    </a>
+
+    <ul class="ml-4 hidden items-center gap-1 md:flex">
+      <li><a href="{{ home_url }}" class="rounded-full px-3.5 py-2 text-sm font-medium transition {% if request.path == home_url %}text-white bg-white/[0.06]{% else %}text-zinc-400 hover:text-white{% endif %}" {% if request.path == home_url %}aria-current="page"{% endif %}>Discover</a></li>
+      <li><a href="{{ browse_url }}" class="rounded-full px-3.5 py-2 text-sm font-medium transition {% if request.path == browse_url or '/movies/c/' in request.path %}text-white bg-white/[0.06]{% else %}text-zinc-400 hover:text-white{% endif %}" {% if request.path == browse_url %}aria-current="page"{% endif %}>Browse</a></li>
+      {% if user.is_authenticated %}
+      <li><a href="{{ collection_url }}" class="rounded-full px-3.5 py-2 text-sm font-medium transition {% if request.path == collection_url %}text-white bg-white/[0.06]{% else %}text-zinc-400 hover:text-white{% endif %}" {% if request.path == collection_url %}aria-current="page"{% endif %}>My collection</a></li>
+      {% endif %}
+    </ul>
+
+    <form action="{% url 'movies:search' %}" method="get" role="search" class="ml-auto hidden w-full max-w-xs sm:block">
+      <label for="nav-search" class="sr-only">Search movies</label>
+      <div class="relative">
+        <span class="pointer-events-none absolute inset-y-0 left-3.5 flex items-center text-zinc-500">{% icon "search" "h-4 w-4" %}</span>
+        <input id="nav-search" type="search" name="q" value="{{ query|default:'' }}" placeholder="Search movies" autocomplete="off"
+               class="h-10 w-full rounded-full border-0 bg-white/[0.06] pl-10 pr-4 text-sm text-white ring-1 ring-inset ring-white/10 placeholder:text-zinc-500 transition focus:bg-white/10 focus:outline-none focus:ring-2 focus:ring-accent">
+      </div>
+    </form>
+
+    <div class="ml-auto flex items-center gap-2 sm:ml-0">
+      <a href="{% url 'movies:search' %}" class="btn-icon sm:hidden" aria-label="Search">{% icon "search" "h-5 w-5" %}</a>
+      {% if user.is_authenticated %}
+        <details class="relative" data-menu>
+          <summary class="flex cursor-pointer items-center gap-2 rounded-full p-1 pr-2 transition hover:bg-white/5" aria-label="Account menu">
+            {% include "partials/avatar.html" with profile=user.profile size="h-8 w-8 text-sm" %}
+            <span class="hidden text-sm font-medium text-zinc-200 lg:inline">{{ user.username }}</span>
+            <span class="hidden text-zinc-500 lg:inline">{% icon "chevron-down" "h-4 w-4" %}</span>
+          </summary>
+          <div class="absolute right-0 mt-2 w-60 origin-top-right overflow-hidden rounded-2xl bg-ink-800/95 p-1.5 shadow-2xl shadow-black/60 ring-1 ring-white/10 backdrop-blur-xl">
+            <div class="px-3 py-2.5">
+              <p class="text-sm font-semibold text-white">{{ user.username }}</p>
+              <p class="truncate text-xs text-zinc-500">{{ user.email }}</p>
+            </div>
+            <div class="my-1 h-px bg-white/[0.06]"></div>
+            <a href="{% url 'accounts:profile' user.username %}" class="flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-zinc-300 hover:bg-white/5 hover:text-white">{% icon "user" "h-4 w-4" %} Public profile</a>
+            <a href="{{ collection_url }}" class="flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-zinc-300 hover:bg-white/5 hover:text-white">{% icon "bookmark" "h-4 w-4" %} My collection</a>
+            <a href="{% url 'accounts:profile_edit' %}" class="flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-zinc-300 hover:bg-white/5 hover:text-white">{% icon "sliders" "h-4 w-4" %} Edit profile</a>
+            {% if user.is_staff %}
+            <a href="{% url 'admin:index' %}" class="flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-zinc-300 hover:bg-white/5 hover:text-white">{% icon "grid" "h-4 w-4" %} Admin</a>
+            {% endif %}
+            <div class="my-1 h-px bg-white/[0.06]"></div>
+            <form method="post" action="{% url 'accounts:logout' %}">
+              {% csrf_token %}
+              <button type="submit" class="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-zinc-300 hover:bg-white/5 hover:text-white">{% icon "logout" "h-4 w-4" %} Log out</button>
+            </form>
+          </div>
+        </details>
+      {% else %}
+        <a href="{% url 'accounts:login' %}?next={{ request.get_full_path|urlencode }}" class="btn-ghost btn-sm hidden sm:inline-flex">Log in</a>
+        <a href="{% url 'accounts:register' %}" class="btn-primary btn-sm">Sign up</a>
+      {% endif %}
+      <button type="button" class="btn-icon md:hidden" data-nav-toggle aria-controls="mobile-nav" aria-expanded="false" aria-label="Toggle navigation">{% icon "menu" "h-5 w-5" %}</button>
+    </div>
+  </nav>
+
+  <div id="mobile-nav" class="border-t border-white/[0.06] md:hidden" hidden>
+    <ul class="container-page space-y-1 py-3">
+      <li><a href="{{ home_url }}" class="block rounded-xl px-3 py-2.5 text-sm font-medium text-zinc-200 hover:bg-white/5">Discover</a></li>
+      <li><a href="{{ browse_url }}" class="block rounded-xl px-3 py-2.5 text-sm font-medium text-zinc-200 hover:bg-white/5">Browse</a></li>
+      <li><a href="{% url 'movies:search' %}" class="block rounded-xl px-3 py-2.5 text-sm font-medium text-zinc-200 hover:bg-white/5">Search</a></li>
+      {% if user.is_authenticated %}
+      <li><a href="{{ collection_url }}" class="block rounded-xl px-3 py-2.5 text-sm font-medium text-zinc-200 hover:bg-white/5">My collection</a></li>
+      {% else %}
+      <li><a href="{% url 'accounts:login' %}" class="block rounded-xl px-3 py-2.5 text-sm font-medium text-zinc-200 hover:bg-white/5">Log in</a></li>
+      {% endif %}
+    </ul>
+  </div>
+</header>

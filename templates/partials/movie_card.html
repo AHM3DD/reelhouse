@@ -1,0 +1,32 @@
+{% load ui %}{% url 'movies:detail' movie.tmdb_id as detail_url %}
+<article class="group relative w-full">
+  <a href="{{ detail_url }}" class="block rounded-xl">
+    <div class="relative aspect-[2/3] overflow-hidden rounded-xl bg-ink-800 ring-1 ring-white/[0.06] transition duration-300 group-hover:-translate-y-1 group-hover:shadow-2xl group-hover:shadow-black/70 group-hover:ring-accent/40">
+      {% if movie.poster_path %}
+        <img src="{{ movie.poster_path|tmdb_image:'w342' }}"
+             srcset="{{ movie.poster_path|tmdb_image:'w185' }} 185w, {{ movie.poster_path|tmdb_image:'w342' }} 342w, {{ movie.poster_path|tmdb_image:'w500' }} 500w"
+             sizes="(min-width: 1280px) 200px, (min-width: 768px) 22vw, 45vw"
+             alt="" loading="lazy" decoding="async" width="342" height="513"
+             class="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]">
+      {% else %}
+        <div class="flex h-full w-full flex-col items-center justify-center gap-3 bg-gradient-to-br from-ink-700 to-ink-900 p-4 text-center">
+          <span class="text-zinc-600">{% icon "photo" "h-10 w-10" stroke="1.2" %}</span>
+          <span class="line-clamp-3 font-display text-lg leading-tight text-zinc-400">{{ movie.title }}</span>
+        </div>
+      {% endif %}
+      <div class="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/70 to-transparent opacity-0 transition group-hover:opacity-100"></div>
+      {% if user_score %}
+        <span class="badge absolute left-2 top-2 bg-accent text-ink-950 shadow-lg" title="Their rating">{% icon "star" "h-3 w-3" filled=True %} {{ user_score }}/10</span>
+      {% elif movie.vote_average|score %}
+        <span class="badge absolute left-2 top-2 bg-black/70 text-zinc-100 ring-1 ring-white/10 backdrop-blur" title="TMDB rating">{% icon "star" "h-3 w-3 text-accent" filled=True %} {{ movie.vote_average|score }}</span>
+      {% endif %}
+    </div>
+    <h3 class="mt-2.5 line-clamp-1 text-sm font-medium text-zinc-100 transition group-hover:text-accent">{{ movie.title }}</h3>
+    <p class="mt-0.5 text-xs text-zinc-500">{{ movie.year|default:"Release date TBA" }}</p>
+  </a>
+  {% if user.is_authenticated and not hide_favorite %}
+    <div class="absolute right-2 top-2">
+      {% include "community/partials/favorite_button.html" with tmdb_id=movie.tmdb_id is_favorite=movie.tmdb_id|in_set:favorite_ids variant="card" title=movie.title %}
+    </div>
+  {% endif %}
+</article>

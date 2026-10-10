@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block title %}Movie temporarily unavailable &middot; {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="container-page py-20">
+  {% url 'movies:detail' tmdb_id as retry_url %}
+  {% include "partials/empty_state.html" with icon_name="warning" tone="error" heading="This movie is temporarily unavailable" message="We could not reach our movie data provider and have no saved copy of this title yet. Please try again in a few minutes." action_url=retry_url action_label="Try again" %}
+</div>
+{% endblock %}

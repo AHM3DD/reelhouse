@@ -1,0 +1,6 @@
+{% load ui %}<div class="flex flex-col items-center justify-center rounded-3xl border border-dashed border-white/10 bg-white/[0.015] px-6 py-16 text-center">
+  <span class="flex h-14 w-14 items-center justify-center rounded-2xl {% if tone == 'error' %}bg-ember/10 text-ember-400{% else %}bg-white/5 text-zinc-400{% endif %}">{% icon icon_name|default:"reel" "h-7 w-7" %}</span>
+  <h3 class="mt-5 font-display text-2xl text-white">{{ heading }}</h3>
+  {% if message %}<p class="mt-2 max-w-md text-sm leading-relaxed text-zinc-400">{{ message }}</p>{% endif %}
+  {% if action_url %}<a href="{{ action_url }}" class="btn-primary mt-6">{{ action_label }}</a>{% endif %}
+</div>

@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% load ui humanize %}
+
+{% block title %}{{ info.title }}{% if info.year %} ({{ info.year }}){% endif %} &middot; {{ SITE_NAME }}{% endblock %}
+{% block meta_description %}{{ info.overview|truncatechars:155 }}{% endblock %}
+
+{% block content %}
+<article>
+  <section class="relative isolate -mt-16 overflow-hidden" aria-labelledby="movie-title">
+    <div class="absolute inset-0 -z-10">
+      {% if info.backdrop_path %}
+        <img src="{{ info.backdrop_path|tmdb_image:'w1280' }}"
+             srcset="{{ info.backdrop_path|tmdb_image:'w780' }} 780w, {{ info.backdrop_path|tmdb_image:'w1280' }} 1280w, {{ info.backdrop_path|tmdb_image:'original' }} 1920w"
+             sizes="100vw" alt="" fetchpriority="high" class="h-full w-full object-cover object-top opacity-60">
+      {% else %}
+        <div class="h-full w-full bg-gradient-to-br from-ink-700 via-ink-900 to-ink-950"></div>
+      {% endif %}
+      <div class="absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/80 to-ink-950/30"></div>
+      <div class="absolute inset-0 bg-gradient-to-r from-ink-950/90 via-ink-950/40 to-transparent"></div>
+    </div>
+
+    <div class="container-page grid gap-8 pb-12 pt-28 md:grid-cols-[16rem_1fr] md:items-end md:gap-12 md:pt-40 lg:grid-cols-[18rem_1fr]">
+      <div class="mx-auto w-48 shrink-0 sm:w-56 md:mx-0 md:w-full">
+        <div class="aspect-[2/3] overflow-hidden rounded-2xl bg-ink-800 shadow-poster">
+          {% if info.poster_path %}
+            <img src="{{ info.poster_path|tmdb_image:'w500' }}" alt="Poster for {{ info.title }}" width="500" height="750" class="h-full w-full object-cover">
+          {% else %}
+            <div class="flex h-full w-full flex-col items-center justify-center gap-3 p-6 text-center text-zinc-600">{% icon "photo" "h-12 w-12" stroke="1.2" %}<span class="text-sm">No poster available</span></div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="min-w-0">
+        {% if degraded %}
+          <p role="status" class="mb-5 inline-flex items-center gap-2 rounded-full bg-accent/10 px-3 py-1.5 text-xs font-medium text-accent-200 ring-1 ring-inset ring-accent/30">{% icon "warning" "h-3.5 w-3.5" %} Showing saved details; live movie data is temporarily unavailable.</p>
+        {% endif %}
+        {% if info.genre_names %}
+          <ul class="flex flex-wrap gap-2" role="list" aria-label="Genres">
+            {% for name in info.genre_names %}<li><span class="rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-zinc-200 backdrop-blur">{{ name }}</span></li>{% endfor %}
+          </ul>
+        {% endif %}
+        <h1 id="movie-title" class="mt-4 text-balance font-display text-5xl leading-[0.95] text-white sm:text-6xl lg:text-7xl">{{ info.title }}</h1>
+        {% if info.original_title and info.original_title != info.title %}<p class="mt-2 text-sm text-zinc-400">Original title: <span class="text-zinc-300">{{ info.original_title }}</span></p>{% endif %}
+        {% if info.tagline %}<p class="mt-3 font-display text-xl italic text-zinc-300">{{ info.tagline }}</p>{% endif %}
+
+        <dl class="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-zinc-300">
+          {% if info.release_date %}<div class="flex items-center gap-2"><dt class="text-zinc-500">{% icon "calendar" "h-4 w-4" %}<span class="sr-only">Release date</span></dt><dd>{{ info.release_date|date:"j M Y" }}</dd></div>{% endif %}
+          {% if info.runtime|runtime %}<div class="flex items-center gap-2"><dt class="text-zinc-500">{% icon "clock" "h-4 w-4" %}<span class="sr-only">Runtime</span></dt><dd>{{ info.runtime|runtime }}</dd></div>{% endif %}
+          {% if info.directors %}<div class="flex items-center gap-2"><dt class="text-zinc-500">Directed by</dt><dd class="font-medium text-white">{% for p in info.directors %}{{ p.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</dd></div>{% endif %}
+        </dl>
+
+        <div class="mt-6 flex flex-wrap items-stretch gap-3">
+          <div class="flex items-center gap-3 rounded-2xl bg-black/40 px-4 py-3 ring-1 ring-white/10 backdrop-blur">
+            <span class="text-accent">{% icon "star" "h-6 w-6" filled=True %}</span>
+            <div>
+              <p class="text-xl font-semibold leading-none text-white">{{ info.vote_average|score|default:"–" }}<span class="text-sm font-normal text-zinc-500">/10</span></p>
+              <p class="mt-1 text-[11px] font-semibold uppercase tracking-wider text-zinc-500">TMDB{% if info.vote_count %} &middot; {{ info.vote_count|intcomma }} votes{% endif %}</p>
+            </div>
+          </div>
+          {% include "community/partials/community_score.html" %}
+        </div>
+
+        <div class="mt-6 flex flex-wrap items-center gap-3">
+          {% if user.is_authenticated %}
+            {% include "community/partials/favorite_button.html" with variant="detail" title=info.title %}
+            {% include "community/partials/list_controls.html" %}
+          {% else %}
+            <a href="{% url 'accounts:login' %}?next={{ request.get_full_path|urlencode }}" class="btn-secondary">{% icon "heart" "h-5 w-5" %} Log in to save favorites</a>
+          {% endif %}
+          {% if info.trailer_key %}
+            <a href="https://www.youtube.com/watch?v={{ info.trailer_key|urlencode }}" target="_blank" rel="noopener noreferrer" class="btn-ghost">{% icon "play" "h-4 w-4" filled=True %} Watch trailer <span class="sr-only">(opens YouTube in a new tab)</span></a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="container-page mt-6 grid gap-10 lg:grid-cols-[1fr_22rem] lg:gap-14">
+    <div class="min-w-0 space-y-12">
+      <section aria-labelledby="overview-heading">
+        <h2 id="overview-heading" class="section-title">Overview</h2>
+        <p class="mt-4 max-w-3xl text-base leading-relaxed text-zinc-300">{{ info.overview|default:"No overview is available for this movie yet." }}</p>
+      </section>
+
+      {% if info.cast %}
+      <section aria-labelledby="cast-heading">
+        <h2 id="cast-heading" class="section-title">Top cast</h2>
+        <ul class="scrollbar-none -mx-4 mt-5 flex gap-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-4 sm:overflow-visible sm:px-0 xl:grid-cols-6" role="list">
+          {% for person in info.cast %}
+            <li class="w-28 shrink-0 sm:w-auto">
+              <div class="aspect-[3/4] overflow-hidden rounded-xl bg-ink-800 ring-1 ring-white/[0.06]">
+                {% if person.profile_path %}
+                  <img src="{{ person.profile_path|tmdb_image:'w185' }}" alt="" loading="lazy" width="185" height="247" class="h-full w-full object-cover">
+                {% else %}
+                  <div class="flex h-full items-center justify-center text-zinc-600">{% icon "user" "h-8 w-8" stroke="1.2" %}</div>
+                {% endif %}
+              </div>
+              <p class="mt-2 line-clamp-1 text-sm font-medium text-white">{{ person.name }}</p>
+              {% if person.role %}<p class="line-clamp-1 text-xs text-zinc-500">{{ person.role }}</p>{% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      </section>
+      {% endif %}
+
+      {% include "community/partials/comments_section.html" %}
+    </div>
+
+    <aside class="space-y-6" aria-label="Your activity and details">
+      {% include "community/partials/rating_widget.html" %}
+
+      <section class="card p-5" aria-labelledby="facts-heading">
+        <h2 id="facts-heading" class="text-sm font-semibold uppercase tracking-widest text-zinc-500">Details</h2>
+        <dl class="mt-4 space-y-3 text-sm">
+          {% if info.status %}<div class="flex justify-between gap-4"><dt class="text-zinc-500">Status</dt><dd class="text-right text-zinc-200">{{ info.status }}</dd></div>{% endif %}
+          {% if info.original_language %}<div class="flex justify-between gap-4"><dt class="text-zinc-500">Language</dt><dd class="text-right text-zinc-200">{{ info.original_language }}</dd></div>{% endif %}
+          {% if info.writers %}<div class="flex justify-between gap-4"><dt class="text-zinc-500">Writing</dt><dd class="text-right text-zinc-200">{% for p in info.writers %}{{ p.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</dd></div>{% endif %}
+          {% if info.budget|money %}<div class="flex justify-between gap-4"><dt class="text-zinc-500">Budget</dt><dd class="text-right text-zinc-200">{{ info.budget|money }}</dd></div>{% endif %}
+          {% if info.revenue|money %}<div class="flex justify-between gap-4"><dt class="text-zinc-500">Box office</dt><dd class="text-right text-zinc-200">{{ info.revenue|money }}</dd></div>{% endif %}
+          <div class="flex justify-between gap-4"><dt class="text-zinc-500">Source</dt><dd class="text-right"><a href="https://www.themoviedb.org/movie/{{ tmdb_id }}" target="_blank" rel="noopener noreferrer" class="link inline-flex items-center gap-1">TMDB {% icon "external" "h-3.5 w-3.5" %}</a></dd></div>
+          {% if info.imdb_id %}<div class="flex justify-between gap-4"><dt class="text-zinc-500">IMDb</dt><dd class="text-right"><a href="https://www.imdb.com/title/{{ info.imdb_id|urlencode }}/" target="_blank" rel="noopener noreferrer" class="link inline-flex items-center gap-1">View {% icon "external" "h-3.5 w-3.5" %}</a></dd></div>{% endif %}
+        </dl>
+      </section>
+    </aside>
+  </div>
+
+  {% if recommendations %}
+  <div class="mt-16">
+    {% include "partials/movie_row.html" with row_id="recommended" title="If you liked this" eyebrow="Recommendations" movies=recommendations see_all_url=None %}
+  </div>
+  {% endif %}
+</article>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% load ui %}<div>
+  {% if field.widget_type == "checkbox" %}
+    <label for="{{ field.id_for_label }}" class="flex cursor-pointer items-center gap-3 text-sm text-zinc-300">{{ field }} <span>{{ field.label }}</span></label>
+  {% else %}
+    <label for="{{ field.id_for_label }}" class="label">{{ field.label }}</label>
+    {{ field }}
+  {% endif %}
+  {% if field.errors %}
+    <div id="{{ field.auto_id }}-error" class="field-error" role="alert">{% icon "warning" "h-3.5 w-3.5 shrink-0" %}<span>{{ field.errors|join:" " }}</span></div>
+  {% endif %}
+  {% if field.help_text %}<div class="help-text [&_li]:mt-0.5 [&_ul]:list-disc [&_ul]:pl-4">{{ field.help_text|safe }}</div>{% endif %}
+</div>

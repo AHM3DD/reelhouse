@@ -1,0 +1,2 @@
+{% include "community/partials/comment_count.html" with oob=True %}
+{% if comment_count == 0 %}<div id="comment-list" hx-swap-oob="true" class="mt-6 space-y-4">{% include "community/partials/comments_empty.html" %}</div>{% endif %}

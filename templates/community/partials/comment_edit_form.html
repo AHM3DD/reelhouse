@@ -1,0 +1,18 @@
+{% load ui %}<article id="comment-{{ comment.pk }}" class="card p-4 ring-accent/30 sm:p-5">
+  <form method="post" action="{% url 'community:comment_edit' comment.pk %}"
+        hx-post="{% url 'community:comment_edit' comment.pk %}" hx-target="#comment-{{ comment.pk }}" hx-swap="outerHTML" hx-disabled-elt="find button[type=submit]"
+        novalidate>
+    {% csrf_token %}
+    <label for="edit-body-{{ comment.pk }}" class="label">Edit your comment</label>
+    <textarea name="body" id="edit-body-{{ comment.pk }}" rows="4" maxlength="2000" required autofocus
+              {% if form.body.errors %}aria-invalid="true" aria-describedby="edit-error-{{ comment.pk }}"{% endif %}
+              class="input resize-y {% if form.body.errors %}input-invalid{% endif %}">{{ form.body.value|default_if_none:"" }}</textarea>
+    {% if form.body.errors %}<p id="edit-error-{{ comment.pk }}" class="field-error" role="alert">{% icon "warning" "h-3.5 w-3.5" %} {{ form.body.errors.0 }}</p>{% endif %}
+    <div class="mt-3 flex justify-end gap-2">
+      <a href="{% url 'movies:detail' comment.movie.tmdb_id %}#comment-{{ comment.pk }}"
+         hx-get="{% url 'community:comment_detail' comment.pk %}" hx-target="#comment-{{ comment.pk }}" hx-swap="outerHTML"
+         class="btn-ghost btn-sm">Cancel</a>
+      <button type="submit" class="btn-primary btn-sm">Save changes</button>
+    </div>
+  </form>
+</article>

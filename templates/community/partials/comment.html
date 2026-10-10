@@ -1,0 +1,28 @@
+{% load ui humanize %}<article id="comment-{{ comment.pk }}" class="card scroll-mt-24 p-4 sm:p-5">
+  <header class="flex items-start gap-3">
+    <a href="{% url 'accounts:profile' comment.user.username %}" class="shrink-0" tabindex="-1" aria-hidden="true">
+      {% include "partials/avatar.html" with profile=comment.user.profile size="h-10 w-10 text-sm" %}
+    </a>
+    <div class="min-w-0 flex-1">
+      <a href="{% url 'accounts:profile' comment.user.username %}" class="text-sm font-semibold text-white hover:text-accent">{{ comment.user.username }}</a>
+      <p class="text-xs text-zinc-500">
+        <time datetime="{{ comment.created_at|date:'c' }}" title="{{ comment.created_at|date:'j M Y, H:i' }}">{{ comment.created_at|naturaltime }}</time>
+        {% if comment.is_edited %}<span title="Edited {{ comment.updated_at|date:'j M Y, H:i' }}"> &middot; edited</span>{% endif %}
+      </p>
+    </div>
+    {% if user.is_authenticated and comment.user_id == user.id %}
+      <div class="flex shrink-0 items-center gap-1">
+        <a href="{% url 'community:comment_edit' comment.pk %}"
+           hx-get="{% url 'community:comment_edit' comment.pk %}" hx-target="#comment-{{ comment.pk }}" hx-swap="outerHTML"
+           class="btn-icon h-8 w-8" aria-label="Edit comment" title="Edit">{% icon "pencil" "h-4 w-4" %}</a>
+        <form method="post" action="{% url 'community:comment_delete' comment.pk %}"
+              hx-post="{% url 'community:comment_delete' comment.pk %}" hx-target="#comment-{{ comment.pk }}" hx-swap="outerHTML"
+              hx-confirm="Delete this comment? This cannot be undone.">
+          {% csrf_token %}
+          <button type="submit" class="btn-icon h-8 w-8 hover:bg-ember/10 hover:text-ember-400" aria-label="Delete comment" title="Delete">{% icon "trash" "h-4 w-4" %}</button>
+        </form>
+      </div>
+    {% endif %}
+  </header>
+  <div class="mt-3 whitespace-normal break-words pl-[3.25rem] text-sm leading-relaxed text-zinc-300">{{ comment.body|linebreaksbr }}</div>
+</article>

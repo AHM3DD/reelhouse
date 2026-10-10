@@ -1,0 +1,17 @@
+{% load ui %}{% if page.has_previous or page.has_next %}
+<nav class="mt-12 flex items-center justify-between gap-4 border-t border-white/[0.06] pt-6" aria-label="Pagination">
+  <div class="min-w-24">
+  {% if page.has_previous %}
+    {% querystring page=page.previous_page_number as prev_qs %}
+    <a href="{{ prev_qs }}" {% if hx_target %}hx-get="{{ prev_qs }}" hx-target="#{{ hx_target }}" hx-push-url="true" hx-swap="innerHTML show:#{{ hx_target }}:top"{% endif %} class="btn-secondary btn-sm" rel="prev">{% icon "chevron-left" "h-4 w-4" %} Previous</a>
+  {% endif %}
+  </div>
+  <p class="text-sm text-zinc-500">Page <span class="font-semibold text-zinc-200">{{ page.number|default:page.page }}</span> of {{ page.paginator.num_pages|default:page.total_pages }}</p>
+  <div class="flex min-w-24 justify-end">
+  {% if page.has_next %}
+    {% querystring page=page.next_page_number as next_qs %}
+    <a href="{{ next_qs }}" {% if hx_target %}hx-get="{{ next_qs }}" hx-target="#{{ hx_target }}" hx-push-url="true" hx-swap="innerHTML show:#{{ hx_target }}:top"{% endif %} class="btn-secondary btn-sm" rel="next">Next {% icon "chevron-right" "h-4 w-4" %}</a>
+  {% endif %}
+  </div>
+</nav>
+{% endif %}

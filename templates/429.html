@@ -1,0 +1,5 @@
+{% extends "error_base.html" %}
+{% block title %}Slow down &middot; {{ SITE_NAME }}{% endblock %}
+{% block code %}429{% endblock %}
+{% block heading %}Too many requests{% endblock %}
+{% block message %}You&rsquo;re doing that a little too often. Please wait a minute and try again.{% endblock %}

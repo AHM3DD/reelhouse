@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% load ui humanize %}
+
+{% block content %}
+{% if hero %}
+<section class="relative isolate -mt-16 overflow-hidden" aria-labelledby="hero-title">
+  <div class="absolute inset-0 -z-10">
+    {% if hero.backdrop_path %}
+      <img src="{{ hero.backdrop_path|tmdb_image:'w1280' }}"
+           srcset="{{ hero.backdrop_path|tmdb_image:'w780' }} 780w, {{ hero.backdrop_path|tmdb_image:'w1280' }} 1280w, {{ hero.backdrop_path|tmdb_image:'original' }} 1920w"
+           sizes="100vw" alt="" fetchpriority="high" class="h-full w-full object-cover object-top">
+    {% endif %}
+    <div class="absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/70 to-ink-950/20"></div>
+    <div class="absolute inset-0 bg-gradient-to-r from-ink-950 via-ink-950/60 to-transparent"></div>
+  </div>
+  <div class="container-page flex min-h-[78vh] flex-col justify-end pb-16 pt-32 sm:min-h-[82vh] sm:pb-20">
+    <div class="max-w-2xl">
+      <p class="eyebrow flex items-center gap-2">{% icon "fire" "h-4 w-4" %} Featured today</p>
+      <h1 id="hero-title" class="mt-4 text-balance font-display text-5xl leading-[0.95] text-white sm:text-7xl">{{ hero.title }}</h1>
+      <div class="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-zinc-300">
+        {% if hero.vote_average|score %}<span class="inline-flex items-center gap-1.5 font-semibold text-white"><span class="text-accent">{% icon "star" "h-4 w-4" filled=True %}</span>{{ hero.vote_average|score }} <span class="font-normal text-zinc-500">TMDB</span></span>{% endif %}
+        {% if hero.year %}<span>{{ hero.year }}</span>{% endif %}
+        {% for genre in hero_genres %}<span class="rounded-full bg-white/10 px-2.5 py-0.5 text-xs backdrop-blur">{{ genre }}</span>{% endfor %}
+      </div>
+      {% if hero.overview %}<p class="mt-5 line-clamp-3 max-w-xl text-base leading-relaxed text-zinc-300 sm:text-lg">{{ hero.overview }}</p>{% endif %}
+      <div class="mt-8 flex flex-wrap items-center gap-3">
+        <a href="{% url 'movies:detail' hero.tmdb_id %}" class="btn-primary px-6 py-3">{% icon "play" "h-4 w-4" filled=True %} View details</a>
+        {% if user.is_authenticated %}
+          {% include "community/partials/favorite_button.html" with tmdb_id=hero.tmdb_id is_favorite=hero.tmdb_id|in_set:favorite_ids variant="hero" title=hero.title %}
+        {% else %}
+          <a href="{% url 'accounts:register' %}" class="btn-secondary px-6 py-3">Join the community</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+{% else %}
+<section class="container-page pt-16">
+  <p class="eyebrow">Welcome to {{ SITE_NAME }}</p>
+  <h1 class="mt-3 max-w-3xl font-display text-5xl leading-tight text-white sm:text-6xl">Discover films. Rate them. Talk about them.</h1>
+</section>
+{% endif %}
+
+{% if failed or stale or partial_failure %}
+<div class="container-page {% if hero %}-mt-6{% else %}mt-8{% endif %} relative">
+  <div role="status" class="flex items-start gap-3 rounded-2xl bg-accent/[0.08] px-4 py-3 text-sm text-accent-200 ring-1 ring-inset ring-accent/20">
+    {% icon "warning" "mt-0.5 h-4 w-4 shrink-0" %}
+    <p>{% if failed %}We can&rsquo;t reach our movie data provider right now. Community activity is still available below; please try again in a few minutes.{% else %}Some movie data may be slightly out of date while our movie data provider is unreachable.{% endif %}</p>
+  </div>
+</div>
+{% endif %}
+
+<div class="mt-12 space-y-14 sm:mt-16">
+  {% for row in rows %}
+    {% url 'movies:category' row.slug as see_all %}
+    {% include "partials/movie_row.html" with row_id=row.slug title=row.title movies=row.movies see_all_url=see_all eyebrow=None %}
+    {% if forloop.counter == 2 and genres %}
+    <section class="container-page" aria-labelledby="genres-heading">
+      <div class="rounded-3xl bg-gradient-to-br from-ink-800 via-ink-900 to-ink-900 p-6 ring-1 ring-white/[0.06] sm:p-10">
+        <p class="eyebrow">Browse by genre</p>
+        <h2 id="genres-heading" class="section-title mt-1">What are you in the mood for?</h2>
+        <ul class="mt-6 flex flex-wrap gap-2" role="list">
+          {% for genre in genres %}
+            <li><a href="{% url 'movies:browse' %}?genre={{ genre.id }}" class="chip px-4 py-2 text-sm">{{ genre.name }}</a></li>
+          {% endfor %}
+        </ul>
+      </div>
+    </section>
+    {% endif %}
+  {% endfor %}
+
+  <section class="container-page" aria-labelledby="community-heading">
+    <p class="eyebrow">From the community</p>
+    <h2 id="community-heading" class="section-title mt-1">Latest discussions</h2>
+    {% if latest_comments %}
+      <ul class="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3" role="list">
+        {% for comment in latest_comments %}
+          <li class="card flex gap-4 p-4 transition hover:ring-white/15">
+            <a href="{% url 'movies:detail' comment.movie.tmdb_id %}#comment-{{ comment.pk }}" class="shrink-0">
+              {% if comment.movie.poster_path %}
+                <img src="{{ comment.movie.poster_path|tmdb_image:'w92' }}" alt="Poster for {{ comment.movie.title }}" loading="lazy" width="56" height="84" class="h-[84px] w-14 rounded-lg object-cover ring-1 ring-white/10">
+              {% else %}
+                <span class="flex h-[84px] w-14 items-center justify-center rounded-lg bg-ink-700 text-zinc-600">{% icon "photo" "h-5 w-5" %}</span>
+              {% endif %}
+            </a>
+            <div class="min-w-0 flex-1">
+              <a href="{% url 'movies:detail' comment.movie.tmdb_id %}#comment-{{ comment.pk }}" class="line-clamp-1 text-sm font-semibold text-white hover:text-accent">{{ comment.movie.title }}</a>
+              <p class="mt-1 line-clamp-2 text-sm text-zinc-400">{{ comment.body }}</p>
+              <p class="mt-2 flex items-center gap-2 text-xs text-zinc-500">
+                {% include "partials/avatar.html" with profile=comment.user.profile size="h-5 w-5 text-[10px]" %}
+                <a href="{% url 'accounts:profile' comment.user.username %}" class="font-medium text-zinc-300 hover:text-white">{{ comment.user.username }}</a>
+                <span aria-hidden="true">&middot;</span>
+                <time datetime="{{ comment.created_at|date:'c' }}">{{ comment.created_at|naturaltime }}</time>
+              </p>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <div class="mt-6">{% include "partials/empty_state.html" with icon_name="chat" heading="No discussions yet" message="Open any movie and be the first to start a conversation." %}</div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

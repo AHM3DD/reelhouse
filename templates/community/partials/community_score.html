@@ -1,0 +1,7 @@
+{% load ui %}<div id="community-score" {% if oob %}hx-swap-oob="true"{% endif %} class="flex items-center gap-3 rounded-2xl bg-black/40 px-4 py-3 ring-1 ring-white/10 backdrop-blur">
+  <span class="text-emerald-400">{% icon "users" "h-6 w-6" %}</span>
+  <div>
+    <p class="text-xl font-semibold leading-none text-white">{% if stats.avg is not None %}{{ stats.avg|floatformat:1 }}<span class="text-sm font-normal text-zinc-500">/10</span>{% else %}<span class="text-base font-medium text-zinc-400">No ratings yet</span>{% endif %}</p>
+    <p class="mt-1 text-[11px] font-semibold uppercase tracking-wider text-zinc-500">{{ SITE_NAME }} community{% if stats.count %} &middot; {{ stats.count }} rating{{ stats.count|pluralize }}{% endif %}</p>
+  </div>
+</div>

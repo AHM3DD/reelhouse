@@ -1,0 +1,12 @@
+{% for comment in comments_page.object_list %}
+  {% include "community/partials/comment.html" %}
+{% endfor %}
+{% if comments_page.has_next %}
+  <div class="flex justify-center pt-2">
+    <button type="button" class="btn-secondary btn-sm"
+            hx-get="{% url 'community:comment_list' tmdb_id %}?page={{ comments_page.next_page_number }}"
+            hx-target="closest div" hx-swap="outerHTML">
+      Load more comments
+    </button>
+  </div>
+{% endif %}

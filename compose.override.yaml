@@ -1,0 +1,21 @@
+# Development overrides, merged automatically by `docker compose up`.
+# For production use: docker compose -f compose.yaml up -d --build
+services:
+  web:
+    command: ["python", "manage.py", "runserver", "0.0.0.0:8888"]
+    restart: "no"
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.development
+    volumes:
+      - .:/app
+      - media:/app/media
+
+  # Rebuilds static/dist/app.css whenever templates or styles change.
+  css:
+    build:
+      context: .
+      target: tailwind
+    command: ["tailwindcss", "-c", "tailwind.config.js", "-i", "static/src/input.css", "-o", "static/dist/app.css", "--watch=always", "--poll"]
+    init: true
+    volumes:
+      - .:/app

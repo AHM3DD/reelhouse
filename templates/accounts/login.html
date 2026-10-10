@@ -1,0 +1,23 @@
+{% extends "accounts/auth_base.html" %}
+{% load ui %}
+
+{% block title %}Log in &middot; {{ SITE_NAME }}{% endblock %}
+{% block heading %}Welcome back{% endblock %}
+{% block subheading %}Log in to rate, comment and keep your lists in sync.{% endblock %}
+
+{% block form %}
+<form method="post" action="{% url 'accounts:login' %}" class="space-y-5" novalidate>
+  {% csrf_token %}
+  <input type="hidden" name="next" value="{{ next }}">
+  {% if form.non_field_errors %}
+    <div class="rounded-xl bg-ember/10 px-4 py-3 text-sm text-ember-400 ring-1 ring-inset ring-ember/30" role="alert">
+      {% for error in form.non_field_errors %}<p class="flex items-center gap-2">{% icon "warning" "h-4 w-4 shrink-0" %} {{ error }}</p>{% endfor %}
+    </div>
+  {% endif %}
+  {% include "partials/field.html" with field=form.username %}
+  {% include "partials/field.html" with field=form.password %}
+  <button type="submit" class="btn-primary w-full py-3">Log in</button>
+</form>
+{% endblock %}
+
+{% block footer_link %}New here? <a href="{% url 'accounts:register' %}{% if next %}?next={{ next|urlencode }}{% endif %}" class="link">Create an account</a>{% endblock %}
