@@ -23,7 +23,14 @@ services:
       start_period: 10s
     networks:
       - backend
-    # No "ports:" on purpose: PostgreSQL is reachable only on the internal network.
+      # Also on the default network: Docker cannot publish ports from an
+      # internal-only network. The published port below is still loopback-only.
+      - default
+    # Published on the host's loopback only (127.0.0.1), so a DB client can connect through
+    # an SSH tunnel. Host port 5434 avoids clashing with other PostgreSQL instances on 5432.
+    # The container-side port must match POSTGRES_PORT.
+    ports:
+      - "127.0.0.1:5434:${POSTGRES_PORT:-5433}"
 
   web:
     build:
