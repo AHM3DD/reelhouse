@@ -4,6 +4,7 @@ from django.core.paginator import Paginator
 from django.db import IntegrityError, transaction
 from django.db.models import Avg, Count, Q
 
+from . import realtime
 from .models import Comment, FavoriteMovie, MovieRating, WatchlistEntry
 
 COMMENTS_PER_PAGE = 10
@@ -96,7 +97,9 @@ def profile_stats(user):
 
 
 def create_comment(user, movie, body):
-    return Comment.objects.create(user=user, movie=movie, body=body)
+    comment = Comment.objects.create(user=user, movie=movie, body=body)
+    realtime.broadcast_comment("created", comment, Comment.objects.filter(movie=movie).count())
+    return comment
 
 
 def update_comment(comment, user, body):
@@ -104,13 +107,16 @@ def update_comment(comment, user, body):
         raise PermissionError("Only the author can edit this comment.")
     comment.body = body
     comment.save(update_fields=["body", "updated_at"])
+    realtime.broadcast_comment("edited", comment, None)
     return comment
 
 
 def delete_comment(comment, user):
     if comment.user_id != user.pk:
         raise PermissionError("Only the author can delete this comment.")
+    movie, comment_id = comment.movie, comment.pk
     comment.delete()
+    realtime.broadcast_deletion(movie.tmdb_id, comment_id, Comment.objects.filter(movie=movie).count())
 
 
 def set_rating(user, movie, score):

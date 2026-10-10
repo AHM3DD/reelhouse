@@ -11,6 +11,7 @@ ALLOWED_HOSTS = ["testserver", "localhost"]
 PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
 
 CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
+CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
 
 # Tests never talk to the real TMDB: every HTTP call is mocked.
 TMDB = {**TMDB, "API_KEY": "test-api-key", "REGION": "", "LANGUAGE": "en-US"}

@@ -157,8 +157,9 @@ class MovieCommentListView(generics.ListCreateAPIView):
         return Comment.objects.filter(movie__tmdb_id=self.kwargs["tmdb_id"]).select_related("user", "movie")
 
     def perform_create(self, serializer):
+        # Go through the service so API comments are broadcast live like website ones.
         movie = _movie_or_error(self.kwargs["tmdb_id"])
-        serializer.save(user=self.request.user, movie=movie)
+        serializer.instance = services.create_comment(self.request.user, movie, serializer.validated_data["body"])
 
 
 class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -170,6 +171,13 @@ class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
         if self.request.method in permissions.SAFE_METHODS:
             return [AllowAny()]
         return [IsAuthenticated(), IsOwnerOrReadOnly()]
+
+    def perform_update(self, serializer):
+        if "body" in serializer.validated_data:
+            services.update_comment(serializer.instance, self.request.user, serializer.validated_data["body"])
+
+    def perform_destroy(self, instance):
+        services.delete_comment(instance, self.request.user)
 
 
 # --- Ratings ---------------------------------------------------------------------------

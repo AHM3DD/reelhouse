@@ -11,8 +11,9 @@ A server-rendered movie community. Discover films with real data from TMDB, rate
 | Database | PostgreSQL 17 (Docker) |
 | Frontend | Django templates, Tailwind CSS (standalone CLI, no Node.js), HTMX, a little vanilla JS |
 | Movie data | The Movie Database (TMDB) API v3 |
-| Serving | Gunicorn + WhiteNoise |
-| Cache | Django `DatabaseCache` in PostgreSQL. It's shared by all workers, survives restarts and needs no Redis. |
+| Serving | Gunicorn managing Uvicorn (ASGI) workers + WhiteNoise. Development uses Daphne via `runserver`. |
+| Live updates | Django Channels over WebSockets, with Redis as the message bus between worker processes |
+| Cache | Django `DatabaseCache` in PostgreSQL. It's shared by all workers and survives restarts. |
 | Runtime | Docker + Docker Compose |
 
 ## Project layout
@@ -37,6 +38,7 @@ docker/            entrypoint.py (wait for DB → migrate → exec command)
 - **Browser pages use session auth with CSRF.** JWTs are only for API clients and are never stored in `localStorage`.
 - **Integrity rules live in the database:** unique (user, movie) for ratings, favorites and list entries; a CHECK constraint keeping ratings within 1–10; non-empty comments; case-insensitive unique email and username.
 - **Every HTMX endpoint also works without JavaScript** (normal POST + redirect).
+- **Comments update live over WebSockets.** Each movie page opens a read-only socket at `/ws/movies/<tmdb_id>/comments/`. Comments are still created, edited and deleted through the normal HTTP endpoints, which enforce login, ownership and rate limits. After the database commit, the server pushes ready-made HTML to everyone viewing that movie. The author gets a copy with edit/delete buttons, everyone else gets one without. If Redis or the socket is down, commenting still works; other viewers just see changes on their next page load.
 
 ## Prerequisites
 
@@ -102,6 +104,8 @@ The key stays on the server: it is never rendered into HTML, sent to the browser
 > ⚠️ Do **not** use `docker compose down -v` as a normal stop command. `-v` deletes the `postgres_data` and `media` volumes, which means every account, comment, rating and avatar.
 
 The admin site is at `/admin/` (or your `DJANGO_ADMIN_URL`). Only staff/superusers can log in.
+
+Containers: `db` (PostgreSQL), `redis` (live-update message bus, holds no persistent data), `web`, and `css` (Tailwind watcher, development only).
 
 ## Database backup and restore
 
@@ -177,6 +181,7 @@ Store tokens in your client's secure storage (Keychain, Keystore, server-side se
 - Public profiles never expose email addresses.
 - Production settings enforce `DEBUG=False`, refuse missing or weak secret keys, and enable an HTTPS redirect, secure cookies and HSTS by default. They also set `X-Frame-Options: DENY`, `nosniff` and a strict referrer policy.
 - No raw SQL is used.
+- WebSocket connections are only accepted from origins in `DJANGO_ALLOWED_HOSTS`, which blocks cross-site WebSocket hijacking. The socket identifies users by the normal session cookie, and anything a browser sends over it is ignored. Redis is reachable only on the internal Docker network.
 
 ## Production deployment checklist
 
@@ -186,4 +191,5 @@ Store tokens in your client's secure storage (Keychain, Keystore, server-side se
 4. Run `docker compose -f compose.yaml exec web python manage.py check --deploy`.
 5. Schedule regular database **and** media backups (see above) and test restores.
 6. At larger scale, serve `/media/` from the proxy or object storage (`DJANGO_SERVE_MEDIA=False`), and consider moving the cache to Redis.
+8. If you put a proxy other than Cloudflare in front, make sure it forwards WebSocket upgrades for `/ws/` (Cloudflare Tunnel does this by default). `DJANGO_ALLOWED_HOSTS` must include the public hostname, or live updates are rejected.
 7. Show the TMDB attribution (already in the footer), as required by the TMDB terms.

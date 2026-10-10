@@ -64,4 +64,5 @@ USER app
 EXPOSE 8888
 
 ENTRYPOINT ["python", "/app/docker/entrypoint.py"]
-CMD ["sh", "-c", "exec gunicorn config.wsgi:application --bind 0.0.0.0:8888 --workers ${GUNICORN_WORKERS:-3} --timeout 30 --access-logfile - --error-logfile -"]
+# Gunicorn manages Uvicorn (ASGI) workers so the app serves HTTP and WebSockets.
+CMD ["sh", "-c", "exec gunicorn config.asgi:application --worker-class uvicorn_worker.UvicornWorker --bind 0.0.0.0:8888 --workers ${GUNICORN_WORKERS:-3} --timeout 30 --access-logfile - --error-logfile -"]

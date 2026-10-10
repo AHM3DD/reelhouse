@@ -93,6 +93,20 @@
   document.addEventListener("htmx:afterSettle", initToasts);
   document.addEventListener("htmx:oobAfterSwap", initToasts);
 
+  // Live comments arrive over a WebSocket as out-of-band swaps. The author also gets the
+  // comment from their own POST response, so skip any comment that is already on the page.
+  document.addEventListener("htmx:oobBeforeSwap", function (event) {
+    if (!event.target || event.target.id !== "comment-list") return;
+    var incoming = event.detail.fragment.querySelectorAll('article[id^="comment-"]');
+    for (var i = 0; i < incoming.length; i++) {
+      if (document.getElementById(incoming[i].id)) {
+        event.detail.shouldSwap = false;
+        event.preventDefault();
+        return;
+      }
+    }
+  });
+
   document.addEventListener("htmx:responseError", function (event) {
     var status = event.detail.xhr.status;
     showToast(ERROR_MESSAGES[status] || "Something went wrong. Please try again.", "error");

@@ -3,6 +3,8 @@
 
 {% block title %}{{ info.title }}{% if info.year %} ({{ info.year }}){% endif %} &middot; {{ SITE_NAME }}{% endblock %}
 {% block meta_description %}{{ info.overview|truncatechars:155 }}{% endblock %}
+{% load static %}
+{% block head %}<script src="{% static 'vendor/htmx-ext-ws.js' %}" defer></script>{% endblock %}
 
 {% block content %}
 <article>
@@ -104,6 +106,9 @@
       {% endif %}
 
       {% include "community/partials/comments_section.html" %}
+      {# Live updates: new, edited and deleted comments arrive over this socket as HTMX out-of-band swaps. #}
+      {# Kept outside #comments so the connection survives when the comment section is re-rendered. #}
+      <div hx-ext="ws" ws-connect="/ws/movies/{{ tmdb_id }}/comments/" hidden></div>
     </div>
 
     <aside class="space-y-6" aria-label="Your activity and details">

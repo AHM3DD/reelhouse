@@ -37,6 +37,8 @@ BEHIND_PROXY = env_bool("DJANGO_BEHIND_PROXY", False)
 ADMIN_URL = env("DJANGO_ADMIN_URL", "admin/")
 
 INSTALLED_APPS = [
+    # Must come first: makes `runserver` serve ASGI (HTTP + WebSockets) in development.
+    "daphne",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -46,6 +48,7 @@ INSTALLED_APPS = [
     "django.contrib.humanize",
     "rest_framework",
     "rest_framework_simplejwt.token_blacklist",
+    "channels",
     "core",
     "accounts",
     "movies",
@@ -84,6 +87,15 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "config.wsgi.application"
+ASGI_APPLICATION = "config.asgi.application"
+
+# Live comment updates: Channels broadcasts between server processes through Redis.
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {"hosts": [env("REDIS_URL", "redis://redis:6379/0")], "capacity": 1500, "expiry": 30},
+    }
+}
 
 DATABASES = {
     "default": {
